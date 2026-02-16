@@ -1,8 +1,8 @@
-const CACHE_NAME = "monsterbp-v1.03";
+const CACHE_NAME = "monsterbp-v1.04";
 const ASSETS = [
   "./",
   "./index.html",
-  "./app.js?ver=1.03",
+  "./app.js?ver=1.04",
   "./favicon.ico",
   "./manifest.json",
   "./icons/icon-192.png",

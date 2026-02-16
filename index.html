@@ -47,7 +47,7 @@
 .hand-meta{font-size:13px;opacity:.82;}
 
 
-/* UI polish v1.01 */
+/* UI polish v1.02 */
 .card{border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35);} .result-big{font-size:64px;font-weight:800;} .glow-blue{color:#4da3ff;} .glow-red{color:#ff4d4d;} .glow-green{color:#38e27d;}
 
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",Helvetica,Arial,sans-serif;margin:0;background:#0b0b0b;color:#f1f1f1}
@@ -90,7 +90,7 @@ header{
   margin: 0 auto;
 ;z-index:50}
 
-/* --- Keypad UI v1.01 (Baccarat style) --- */
+/* --- Keypad UI v1.02 (Baccarat style) --- */
 #cardPad{
   display:grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -168,11 +168,11 @@ button.key .badgeWrap{
 #keypadBackspaceBtn{ display:none !important; }
 
 
-/* Side indicators are auto-controlled in v1.40 */
+/* Side indicators are auto-controlled in v1.02 */
 #sidePlayer, #sideBanker{ pointer-events:none; }
 
 
-/* v1.40: log undo button placement */
+/* v1.02: log undo button placement */
 .log-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .log-left{flex:1;min-width:0}
 .undo-btn{white-space:nowrap;padding:8px 12px;font-weight:800;opacity:1}
@@ -196,24 +196,22 @@ button.key .badgeWrap{
 /* Header row for tabs */
 .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .header-titles{min-width:0}
+
+/* TP display (v1.02) */
+.tp-positive{ color:#2ecc71; font-weight:600; }
+.tp-negative{ color:#e74c3c; font-weight:600; }
+.tp-neutral{ color:#aaa; }
+.tp-weak{ color:#95a5a6; }
+.tp-medium{ color:#f1c40f; font-weight:600; }
+.tp-strong{ color:#e67e22; font-weight:700; }
+
 </style>
-
-<style>
-.tp-positive { color: #2ecc71; font-weight: 600; }
-.tp-negative { color: #e74c3c; font-weight: 600; }
-.tp-neutral { color: #aaa; }
-
-.tp-weak { color: #95a5a6; }
-.tp-medium { color: #f1c40f; font-weight: 600; }
-.tp-strong { color: #e67e22; font-weight: 700; }
-</style>
-
 </head>
 <body>
 <header>
   <div class="header-row">
     <div class="header-titles">
-      <h1>百家輔助系統 <span id="verBadge" style="font-size:14px; font-weight:700; opacity:.75;">v1.01</span></h1>
+      <h1>百家輔助系統 <span id="verBadge" style="font-size:14px; font-weight:700; opacity:.75;">v1.02</span></h1>
       <div class="sub">僅供輔助參考，切勿沉迷。</div>
     </div>
     <div id="tabbar" class="tabbar" aria-label="分頁">
@@ -291,11 +289,31 @@ button.key .badgeWrap{
     </div>
   </div>
 
-  <div class="card">
+  
+  <div class="card" id="tpStatusCard">
+    <div class="label muted" style="margin-bottom:8px;">TP 狀態</div>
+    <div class="row" style="gap:10px; flex-wrap:wrap;">
+      <div class="box wide">
+        <div class="label">上局 TP</div>
+        <div class="value mono">莊 <span id="tpPrevB">0.00</span> / 閒 <span id="tpPrevP">0.00</span></div>
+      </div>
+      <div class="box wide">
+        <div class="label">本局 TP</div>
+        <div class="value mono">莊 <span id="tpNowB">0.00</span> / 閒 <span id="tpNowP">0.00</span></div>
+      </div>
+      <div class="box wide">
+        <div class="label">TP 差距</div>
+        <div class="value mono">莊 <span id="tpDiffB">0.00</span> / 閒 <span id="tpDiffP">0.00</span></div>
+        <div class="subvalue" id="tpStrengthRow">TP 差距強度：0.00（弱）</div>
+      </div>
+    </div>
+  </div>
+
+<div class="card">
     <div class="label muted" style="margin-bottom:8px;">紀錄（最新在上）</div>
     
 <div class="row" style="justify-content:space-between; align-items:center; gap:10px; margin:6px 0;">
-  <div class="muted" id="courseStatus" style="font-size:13px;">課程狀態：未完成（0 / 6）</div>
+  <div class="muted" id="courseStatus" style="font-size:13px;">課程狀態：未完成（0 / 4）</div>
   <button id="downloadCsvBtn" type="button" disabled>下載紀錄</button>
 </div>
 
@@ -305,10 +323,10 @@ button.key .badgeWrap{
     </div>
   </div>
 
-<div id="buildInfo" class="muted" style="text-align:center; font-size:12px; opacity:.6; padding:10px 0;">Build: v1.01</div>
+<div id="buildInfo" class="muted" style="text-align:center; font-size:12px; opacity:.6; padding:10px 0;">Build: v1.02</div>
 </main>
 
-<script src="app.js?ver=1.01"></script>
+<script src="app.js?ver=1.02"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));

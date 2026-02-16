@@ -1,5 +1,5 @@
 // Build v28
-const BUILD_VERSION = "v1.01";
+const BUILD_VERSION = "v1.02";
 
 function onEvent(id, event, handler){
   const el = document.getElementById(id);
@@ -63,7 +63,7 @@ function bankerShouldDraw(b2, p3Point){
   if (b2 === 3) return p3Point !== 8;
   if (b2 === 4) return p3Point >= 2 && p3Point <= 7;
   if (b2 === 5) return p3Point >= 4 && p3Point <= 7;
-  if (b2 === 6) return p3Point === 6 || p3Point === 7;
+  if (b2 === 4) return p3Point === 4 || p3Point === 7;
   return false; // 7 stands
 }
 function expectedSide(){
@@ -161,6 +161,11 @@ function newState(){
     prevB: null,
     pendingPick: null, // 上一局產生的「下局建議」，等待本局結算
 
+    tpPrevB: null,
+    tpPrevP: null,
+    tpNowB: null,
+    tpNowP: null,
+
     stats: {
       handNo:0,
       bankerWins:0, playerWins:0, ties:0,
@@ -180,6 +185,11 @@ migrateLegacyToAIfNeeded();
 let state = loadState(activeTab) ?? newState();
 
 function ensureStateFixups(){
+  // v1.02: TP fields defaults
+  if (!("tpPrevB" in state)) state.tpPrevB = null;
+  if (!("tpPrevP" in state)) state.tpPrevP = null;
+  if (!("tpNowB" in state)) state.tpNowB = null;
+  if (!("tpNowP" in state)) state.tpNowP = null;
 // v1.39: course progress defaults + rebuild if missing
 function rebuildCourseProgressFromLog(){
   let cw = 0;
@@ -324,14 +334,20 @@ function excelNextPick(pRanks, bRanks){
 
   let pick = null;
   if (tpP!=null && tpB!=null){
-    if (tpP > tpB) pick = "莊家";
-    else if (tpB > tpP) pick = "閒家";
+    if (tpB > tpP) pick = "莊家";
+    else if (tpP > tpB) pick = "閒家";
     else pick = "看一局";
   }
 
   state.prevP = pTotal;
   state.prevB = bTotal;
 
+  // v1.02: store TP for UI (per tab) and update card
+  state.tpPrevB = state.tpNowB;
+  state.tpPrevP = state.tpNowP;
+  state.tpNowB = tpB;
+  state.tpNowP = tpP;
+  try{ updateTPUI(state.tpPrevB, state.tpPrevP, state.tpNowB, state.tpNowP); }catch(e){}
   return {pTotal, bTotal, tpP, tpB, nextPick: pick};
 }
 
@@ -903,7 +919,7 @@ function updateCourseStatusUI(){
 }
 function downloadCSVForActiveTab(){
   if (!isCourseDone()){
-    alert("課程未完成（6/6）時不可下載紀錄");
+    alert("課程未完成（6/ 4）時不可下載紀錄");
     return;
   }
   const csv = "\ufeff" + buildCSVForState(state); // BOM for Excel
@@ -977,64 +993,43 @@ document.addEventListener("DOMContentLoaded", ()=>{
 });
 
 
-function updateTPUI(prevB, prevP, nowB, nowP) {
-  const format = v => (v === null || v === undefined) ? "0.00" : Number(v).toFixed(2);
-  document.getElementById("tpPrevB").textContent = format(prevB);
-  document.getElementById("tpPrevP").textContent = format(prevP);
-  document.getElementById("tpNowB").textContent = format(nowB);
-  document.getElementById("tpNowP").textContent = format(nowP);
-  document.getElementById("tpDiffB").textContent = format(Math.abs((nowB||0)-(prevB||0)));
-  document.getElementById("tpDiffP").textContent = format(Math.abs((nowP||0)-(prevP||0)));
-}
-
-
-function updateTPUI(prevB, prevP, nowB, nowP) {
-
+function updateTPUI(prevB, prevP, nowB, nowP){
   function format(v){
-    if (v === null || v === undefined) return "0.00";
+    if (v === null || v === undefined || Number.isNaN(v)) return "0.00";
     return Number(v).toFixed(2);
   }
-
-  function applyColor(el, value){
+  function setColor(el, v){
     el.classList.remove("tp-positive","tp-negative","tp-neutral");
-    if (value > 0) el.classList.add("tp-positive");
-    else if (value < 0) el.classList.add("tp-negative");
+    if (v > 0) el.classList.add("tp-positive");
+    else if (v < 0) el.classList.add("tp-negative");
     else el.classList.add("tp-neutral");
   }
-
   const prevBEl = document.getElementById("tpPrevB");
   const prevPEl = document.getElementById("tpPrevP");
   const nowBEl  = document.getElementById("tpNowB");
   const nowPEl  = document.getElementById("tpNowP");
   const diffBEl = document.getElementById("tpDiffB");
   const diffPEl = document.getElementById("tpDiffP");
+  const strengthEl = document.getElementById("tpStrengthRow");
+  if (!prevBEl || !prevPEl || !nowBEl || !nowPEl || !diffBEl || !diffPEl) return;
+
+  prevBEl.textContent = format(prevB); setColor(prevBEl, prevB||0);
+  prevPEl.textContent = format(prevP); setColor(prevPEl, prevP||0);
+  nowBEl.textContent  = format(nowB);  setColor(nowBEl, nowB||0);
+  nowPEl.textContent  = format(nowP);  setColor(nowPEl, nowP||0);
+
+  const dB = Math.abs((nowB||0)-(prevB||0));
+  const dP = Math.abs((nowP||0)-(prevP||0));
+  diffBEl.textContent = format(dB);
+  diffPEl.textContent = format(dP);
 
   const diff = Math.abs((nowB||0) - (nowP||0));
-
-  function strengthLabel(d){
-    if (d < 0.2) return ["弱","tp-weak"];
-    if (d < 0.7) return ["中等","tp-medium"];
-    return ["強","tp-strong"];
-  }
-
-  const [label, cls] = strengthLabel(diff);
-
-  prevBEl.textContent = format(prevB);
-  prevPEl.textContent = format(prevP);
-  nowBEl.textContent  = format(nowB);
-  nowPEl.textContent  = format(nowP);
-
-  applyColor(prevBEl, prevB);
-  applyColor(prevPEl, prevP);
-  applyColor(nowBEl, nowB);
-  applyColor(nowPEl, nowP);
-
-  diffBEl.textContent = format(Math.abs((nowB||0)-(prevB||0)));
-  diffPEl.textContent = format(Math.abs((nowP||0)-(prevP||0)));
-
-  const strengthRow = document.getElementById("tpStrengthRow");
-  if (strengthRow){
-    strengthRow.innerHTML = "TP 差距強度：" + diff.toFixed(2) + "（" + label + "）";
-    strengthRow.className = cls;
+  let label="弱", cls="tp-weak";
+  if (diff >= 0.7){ label="強"; cls="tp-strong"; }
+  else if (diff >= 0.2){ label="中等"; cls="tp-medium"; }
+  if (strengthEl){
+    strengthEl.textContent = `TP 差距強度：${diff.toFixed(2)}（${label}）`;
+    strengthEl.classList.remove("tp-weak","tp-medium","tp-strong");
+    strengthEl.classList.add(cls);
   }
 }

@@ -1,5 +1,5 @@
 // Build v28
-const BUILD_VERSION = "v1.02";
+const BUILD_VERSION = "v1.03";
 
 function onEvent(id, event, handler){
   const el = document.getElementById(id);
@@ -280,12 +280,18 @@ function applyHandResult(win){
 
 function updateCourseAfterPickResult(res){
   const st = state.stats;
-  if (st.courseDone) return;
+
+  // 完成課程後：下一次遇到贏/輸時，自動開新一輪（重新累計）
+  if (st.courseDone && (res === "贏" || res === "輸")){
+    st.courseWins = 0;
+    st.courseProgress = 0;
+    st.courseDone = false;
+  }
 
   if (res === "贏"){
     st.courseWins = (st.courseWins ?? 0) + 1;
     if (st.courseWins >= 4){
-      st.courseWins = 6;
+      st.courseWins = 4;
       st.courseDone = true;
     }
     st.courseProgress = 0;
@@ -521,6 +527,14 @@ function submit(line){
     nextPick: res.nextPick ?? "（前兩手不足）",
     tpP: res.tpP,
     tpB: res.tpB,
+    tpPrevP: state.tpPrevP,
+    tpPrevB: state.tpPrevB,
+    tpNowP: state.tpNowP,
+    tpNowB: state.tpNowB,
+    tpDiffP: Math.abs((state.tpNowP||0)-(state.tpPrevP||0)),
+    tpDiffB: Math.abs((state.tpNowB||0)-(state.tpPrevB||0)),
+    tpBpDiff: Math.abs((state.tpNowB||0)-(state.tpNowP||0)),
+    tpStrengthLabel: (function(d){ if(d>=0.7) return "強"; if(d>=0.2) return "中等"; return "弱"; })(Math.abs((state.tpNowB||0)-(state.tpNowP||0))),
     ts: Date.now()
   });
 
@@ -573,7 +587,10 @@ function render(){
         <div class="mono muted" style="margin-top:6px;">
           輸入：${escapeHtml(row.input)}<br/>
           點數：閒=${row.pTotal} 莊=${row.bTotal}<br/>
-          TP：閒=${row.tpP==null?"（無）":escapeHtml(fmt(row.tpP))} ｜ 莊=${row.tpB==null?"（無）":escapeHtml(fmt(row.tpB))}
+          TP：閒=${row.tpP==null?"（無）":escapeHtml(fmt(row.tpP))} ｜ 莊=${row.tpB==null?"（無）":escapeHtml(fmt(row.tpB))}<br/>
+上局TP：閒=${row.tpPrevP==null?"（無）":escapeHtml(fmt(row.tpPrevP))} ｜ 莊=${row.tpPrevB==null?"（無）":escapeHtml(fmt(row.tpPrevB))}<br/>
+上本局差距：閒=${row.tpDiffP==null?"（無）":escapeHtml(fmt(row.tpDiffP))} ｜ 莊=${row.tpDiffB==null?"（無）":escapeHtml(fmt(row.tpDiffB))}<br/>
+莊閒TP差距：${row.tpBpDiff==null?"（無）":escapeHtml(fmt(row.tpBpDiff))}（${row.tpStrengthLabel||"弱"}）
         </div>
       `;
       logEl.appendChild(div);
@@ -879,7 +896,7 @@ function csvEscape(v){
   return s;
 }
 function buildCSVForState(st){
-  const header = ["局號","輸入","閒點","莊點","本局勝利","上局建議","上局結果","下局建議","時間"];
+  const header = ["局號","輸入","閒點","莊點","本局勝利","上局建議","上局結果","下局建議","上局TP(莊)","上局TP(閒)","本局TP(莊)","本局TP(閒)","上本局差距(莊)","上本局差距(閒)","莊閒TP差距","TP差距等級","時間"];
   const rows = [header];
   const log = Array.isArray(st.log) ? st.log : [];
   // export oldest -> newest
@@ -894,6 +911,14 @@ function buildCSVForState(st){
       r.prevPick ?? "",
       r.prevPickResult ?? "",
       r.nextPick ?? "",
+      r.tpPrevB ?? "",
+      r.tpPrevP ?? "",
+      r.tpNowB ?? r.tpB ?? "",
+      r.tpNowP ?? r.tpP ?? "",
+      r.tpDiffB ?? "",
+      r.tpDiffP ?? "",
+      r.tpBpDiff ?? "",
+      r.tpStrengthLabel ?? "",
       toIsoDateTime(r.ts)
     ]);
   }
@@ -908,7 +933,7 @@ function updateCourseStatusUI(){
   const btn = document.getElementById("downloadCsvBtn");
   const cw = state.stats?.courseWins ?? 0;
   const done = isCourseDone();
-  const shown = Math.min(cw, 6);
+  const shown = Math.min(cw, 4);
   if (statusEl){
     statusEl.textContent = done ? `課程狀態：已完成（${shown} / 4）` : `課程狀態：未完成（${shown} / 4）`;
   }
@@ -1011,6 +1036,7 @@ function updateTPUI(prevB, prevP, nowB, nowP){
   const diffBEl = document.getElementById("tpDiffB");
   const diffPEl = document.getElementById("tpDiffP");
   const strengthEl = document.getElementById("tpStrengthRow");
+  const bpDiffEl = document.getElementById("tpBpDiff");
   if (!prevBEl || !prevPEl || !nowBEl || !nowPEl || !diffBEl || !diffPEl) return;
 
   prevBEl.textContent = format(prevB); setColor(prevBEl, prevB||0);
@@ -1024,6 +1050,7 @@ function updateTPUI(prevB, prevP, nowB, nowP){
   diffPEl.textContent = format(dP);
 
   const diff = Math.abs((nowB||0) - (nowP||0));
+  if (bpDiffEl){ bpDiffEl.textContent = diff.toFixed(2); }
   let label="弱", cls="tp-weak";
   if (diff >= 0.7){ label="強"; cls="tp-strong"; }
   else if (diff >= 0.2){ label="中等"; cls="tp-medium"; }

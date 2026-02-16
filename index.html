@@ -47,7 +47,7 @@
 .hand-meta{font-size:13px;opacity:.82;}
 
 
-/* UI polish v1.05 */
+/* UI polish v1.06 */
 .card{border-radius:18px;box-shadow:0 10px 30px rgba(0,0,0,.35);} .result-big{font-size:64px;font-weight:800;} .glow-blue{color:#4da3ff;} .glow-red{color:#ff4d4d;} .glow-green{color:#38e27d;}
 
     body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans TC",Helvetica,Arial,sans-serif;margin:0;background:#0b0b0b;color:#f1f1f1}
@@ -90,7 +90,7 @@ header{
   margin: 0 auto;
 ;z-index:50}
 
-/* --- Keypad UI v1.05 (Baccarat style) --- */
+/* --- Keypad UI v1.06 (Baccarat style) --- */
 #cardPad{
   display:grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -168,11 +168,11 @@ button.key .badgeWrap{
 #keypadBackspaceBtn{ display:none !important; }
 
 
-/* Side indicators are auto-controlled in v1.05 */
+/* Side indicators are auto-controlled in v1.06 */
 #sidePlayer, #sideBanker{ pointer-events:none; }
 
 
-/* v1.05: log undo button placement */
+/* v1.06: log undo button placement */
 .log-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
 .log-left{flex:1;min-width:0}
 .undo-btn{white-space:nowrap;padding:8px 12px;font-weight:800;opacity:1}
@@ -197,7 +197,7 @@ button.key .badgeWrap{
 .header-row{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .header-titles{min-width:0}
 
-/* TP display (v1.05) */
+/* TP display (v1.06) */
 .tp-positive{ color:#2ecc71; font-weight:600; }
 .tp-negative{ color:#e74c3c; font-weight:600; }
 .tp-neutral{ color:#aaa; }
@@ -211,7 +211,7 @@ button.key .badgeWrap{
 <header>
   <div class="header-row">
     <div class="header-titles">
-      <h1>百家輔助系統 <span id="verBadge" style="font-size:14px; font-weight:700; opacity:.75;">v1.05</span></h1>
+      <h1>百家輔助系統 <span id="verBadge" style="font-size:14px; font-weight:700; opacity:.75;">v1.06</span></h1>
       <div class="sub">僅供輔助參考，切勿沉迷。</div>
     </div>
     <div id="tabbar" class="tabbar" aria-label="分頁">
@@ -290,29 +290,31 @@ button.key .badgeWrap{
   </div>
 
   
-  <div class="card" id="tpStatusCard">
-    <div class="label muted" style="margin-bottom:8px;">TP 狀態</div>
-    <div class="row" style="gap:10px; flex-wrap:wrap;">
-      <div class="box wide">
-        <div class="label">上局 TP</div>
-        <div class="value mono">莊 <span id="tpPrevB">0.00</span> / 閒 <span id="tpPrevP">0.00</span></div>
-      </div>
-      <div class="box wide">
-        <div class="label">本局 TP</div>
-        <div class="value mono">莊 <span id="tpNowB">0.00</span> / 閒 <span id="tpNowP">0.00</span></div>
-      </div>
-      <div class="box wide">
-        <div class="label">上本局差距</div>
-        <div class="value mono" style="display:flex; justify-content:space-between;">
-          <div>莊 <span id="tpDiffB">0.00</span> / 閒 <span id="tpDiffP">0.00</span></div>
-          <div>莊閒 <span id="tpBpDiff">0.00</span></div>
-        </div>
-        <div class="subvalue" id="tpStrengthRow">TP 差距強度：0.00（弱）</div>
-      </div>
+  
+<div class="card" id="tpStatusCard">
+  <div class="label muted" style="margin-bottom:8px;">TP 狀態</div>
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:12px;">
+    <div class="box wide">
+      <div class="label">上局 TP</div>
+      <div class="value mono">莊 <span id="tpPrevB">0.00</span> / 閒 <span id="tpPrevP">0.00</span></div>
+    </div>
+    <div class="box wide">
+      <div class="label">本局 TP</div>
+      <div class="value mono">莊 <span id="tpNowB">0.00</span> / 閒 <span id="tpNowP">0.00</span></div>
+    </div>
+    <div class="box wide">
+      <div class="label">上本局差距</div>
+      <div class="value mono">莊 <span id="tpDiffB">0.00</span> / 閒 <span id="tpDiffP">0.00</span></div>
+    </div>
+    <div class="box wide">
+      <div class="label">莊閒TP差距</div>
+      <div class="value mono"><span id="tpBpDiff">0.00</span> <span id="tpStrengthRow">（弱）</span></div>
     </div>
   </div>
+</div>
 
 <div class="card">
+
     <div class="label muted" style="margin-bottom:8px;">紀錄（最新在上）</div>
     
 <div class="row" style="justify-content:flex-end; align-items:center; gap:10px; margin:6px 0;">
@@ -325,10 +327,10 @@ button.key .badgeWrap{
     </div>
   </div>
 
-<div id="buildInfo" class="muted" style="text-align:center; font-size:12px; opacity:.6; padding:10px 0;">Build: v1.05</div>
+<div id="buildInfo" class="muted" style="text-align:center; font-size:12px; opacity:.6; padding:10px 0;">Build: v1.06</div>
 </main>
 
-<script src="app.js?ver=1.05"></script>
+<script src="app.js?ver=1.06"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(()=>{}));
